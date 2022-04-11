@@ -9,6 +9,9 @@ jobs:
   update:
     runs-on: ubuntu-latest
     steps:
+    - name: Checkout
+      uses: actions/checkout@main
+
     - name: Sync
       uses: ms-jpq/sync-dockerhub-readme@v1
       with:
