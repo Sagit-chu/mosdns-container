@@ -6,7 +6,8 @@ name: update tag
 # or API.
 on:
   workflow_dispatch:
-
+  schedule:
+    - cron: 0 0 * * 6
 
 env:
   TZ: Asia/Shanghai
@@ -45,3 +46,10 @@ jobs:
         git add .
         git commit -m "update tag $(TZ='Asia/Shanghai' date +%m-%d" "%H:%M)"
         git push --quiet "https://${{ secrets.ACCESS_TOKEN }}@github.com/Sagit-chu/mosdns-container.git" HEAD:main
+
+    - name: Trigger build
+      if: steps.Upload.outputs.cache-hit != 'true'
+      uses: peter-evans/repository-dispatch@v1
+      with:
+        token: ${{ secrets.ACCESS_TOKEN }}
+        event-type: Tag Update

@@ -1,12 +1,7 @@
 name: Release mosdns docker
 
 on:
-  push:
-    paths:
-      - "tag"
-      - "Dockerfile"
-      - "config.yaml"
-      - ".github/workflows/release.yml"
+  repository_dispatch:
   workflow_dispatch:
 
 jobs:
