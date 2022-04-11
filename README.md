@@ -6,7 +6,7 @@
 
 项目地址: [github.com/IrineSistiana/mosdns](https://github.com/IrineSistiana/mosdns)
 
-Dockerfile: [github.com/Sagit-chu/mosdns-docker](https://github.com/Sagit-chu/mosdns-container)
+Dockerfile: [github.com/Sagit-chu/mosdns-container](https://github.com/Sagit-chu/mosdns-container)
 # 支持的平台
 * `linux/amd64`
 * `linux/arm/v7`
@@ -16,7 +16,7 @@ Dockerfile: [github.com/Sagit-chu/mosdns-docker](https://github.com/Sagit-chu/mo
 镜像基于 `alpine:latest`。包含 mosdns 和，TLS 需要的 ca 根证书包，配置文件，geoip.dat，geosite.dat。
 
 
-配置文件在[github.com/Sagit-chu/mosdns-docker](https://github.com/Sagit-chu/mosdns-container)
+配置文件在[github.com/Sagit-chu/mosdns-container](https://github.com/Sagit-chu/mosdns-container)
 
 
 geoip.dat，geosite.dat会随着镜像更新
