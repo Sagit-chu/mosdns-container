@@ -6,7 +6,11 @@ name: update tag
 # or API.
 on:
   workflow_dispatch:
-  
+
+
+env:
+  TZ: Asia/Shanghai
+
 jobs:
   update:
     runs-on: ubuntu-latest
@@ -14,8 +18,30 @@ jobs:
     
     - name: Checkout
       uses: actions/checkout@main
-      
+    
+    - name: Initialization environment
+      env:
+        DEBIAN_FRONTEND: noninteractive
+      run: |
+        sudo -E apt-get -qq update
+        sudo -E apt-get -qq install git subversion git-core wget
+        sudo timedatectl set-timezone "$TZ"
+        git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+        git config --global user.name "github-actions[bot]"
+
     - name: execute
       run: |
-       chmod +x UpdateTag.sh
-       UpdateTag.sh
+        cd $GITHUB_WORKSPACE
+        chmod +x UpdateTag.sh
+        git clone https://github.com/Sagit-chu/mosdns-container.git mosdns-container
+        cd mosdns-container
+        $GITHUB_WORKSPACE/UpdateTag.sh
+    
+    - name: Upload
+      env: 
+        ACCESS_TOKEN: ${{ secrets.ACCESS_TOKEN }}
+      run: |
+        cd $GITHUB_WORKSPACE/mosdns-container
+        git add .
+        git commit -m "update tag $(TZ='Asia/Shanghai' date +%m-%d" "%H:%M)"
+        git push --quiet "https://${{ secrets.ACCESS_TOKEN }}@github.com/Sagit-chu/mosdns-container.git" HEAD:main
