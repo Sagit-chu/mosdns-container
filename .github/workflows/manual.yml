@@ -1,0 +1,17 @@
+# This is a basic workflow that is manually triggered
+
+name: update tag
+
+# Controls when the action will run. Workflow runs when manually triggered using the UI
+# or API.
+on:
+  workflow_dispatch:
+  
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+    - name: execute
+      run: |
+       chmod +x UpdateTag.sh
+       UpdateTag.sh
