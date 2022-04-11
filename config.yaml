@@ -1,0 +1,261 @@
+log:
+  level: info
+  file: ""
+
+plugin:
+  ################# 服务插件 ################
+
+  # 启动服务器的插件
+  - tag: main_server
+    type: server
+    args:
+      entry:
+        - main_sequence # 运行主执行序列
+        - modify_ttl # 修改 ttl
+      server:
+        #- protocol: udp
+        #  addr: "127.0.0.1:53"
+        #- protocol: tcp
+        #  addr: "127.0.0.1:53"
+        - protocol: udp
+          addr: "[::]:53"
+        - protocol: tcp
+          addr: "[::]:53"
+  ################# 可执行插件 ################
+
+
+  - tag: "ecs-cn"
+    type: "ecs"
+    args:
+      auto: false #仅适用于公网的服务器。本地运行不要启用这个功能。
+      ipv4: "202.120.2.101" # 预设 IPv4
+      ipv6: "2001:da8:8000:1:202:120:2:101" # 预设 IPv6
+      force_overwrite: true # 强制覆盖
+      mask4: 24 # 用于 ipv4 地址的掩码 默认: 24。
+      mask6: 48 # 用于 ipv6 地址的掩码 默认: 48。
+
+  # 修改应答 ttl
+  - tag: "modify_ttl"
+    type: "ttl"
+    args:
+      minimal_ttl: 300
+      maximum_ttl: 3600
+
+  ################ 序列 #################
+
+  # main_sequence
+  - tag: main_sequence
+    type: sequence
+    args:
+      exec:
+        - if:
+            - query_cn # cn域名
+            - "!_query_is_common" # 不常见的请求
+          exec:
+            - ecs-cn
+            - _pad_query # 使用 EDNS0 的 Padding Option 将 DNS 报文用 0 填充至固定长度。能防止流量分析保护隐私
+            - local # 用本地服务器
+            - if:
+                - "response_cnip" # 结果是 cnip
+              exec:
+                - _return # 结束
+
+        - if:
+            - query_notcn # 已知的 非cn域名
+          exec:
+            - _prefer_ipv4 # 优先 IPv4
+            - _pad_query
+            - remote # 无污染
+            - if:
+                - "!response_cnip" # 结果是 非cnip
+              exec:
+                - _return # 结束
+
+        - primary: #其他所有情况
+            - _prefer_ipv4
+            - _pad_query
+            - remote
+          secondary:
+            - _prefer_ipv4
+            - _pad_query
+            - local
+          fast_fallback: 400 # 这里建议设置成 local 服务器正常延时的 2~5 倍 单位: 毫秒
+          always_standby: true
+
+  # local 序列
+  - tag: local
+    type: sequence
+    args:
+      exec:
+        - primary:
+            - parallel: # 并行
+                - - "ali" # 执行序列 #1。
+                - - "dnspod" # 执行序列 #2。
+          secondary:
+            - localdns # 备用本地
+          fast_fallback: 600 # 这里建议设置成 primary 服务器正常延时的 2~5 倍 单位: 毫秒。
+          always_standby: true
+
+  # remote 序列
+  - tag: remote
+    type: sequence
+    args:
+      exec:
+        - primary:
+            - parallel: # 并行
+                - - "google" # 执行序列 #1。
+                - - "cloudflare" # 执行序列 #2。
+          secondary:
+            - adguard # 备用 adguard
+          fast_fallback: 600 # 这里建议设置成 primary 服务器正常延时的 2~5 倍 单位: 毫秒。
+          always_standby: true
+
+  ################ DNS #################
+  # 阿里 dns
+  - tag: ali
+    type: forward
+    args:
+      upstream:
+        - addr: "https://dns.alidns.com/dns-query" # 服务器地址
+          ip_addr: # 手动指定服务器的 IP 地址 可以配置多个
+            - "2400:3200:baba::1"
+            - "223.5.5.5"
+            - "2400:3200::1"
+            - "223.6.6.6"
+          trusted: true # 是否是可信服务器
+        - addr: "tls://dns.alidns.com" # 服务器地址
+          ip_addr: # 手动指定服务器的 IP 地址 可以配置多个
+            - "2400:3200:baba::1"
+            - "223.5.5.5"
+            - "2400:3200::1"
+            - "223.6.6.6"
+          trusted: true # 是否是可信服务器
+
+      bootstrap:
+        - "tls://1.1.1.1"
+        - "https://223.5.5.5/dns-query"
+      fastest_ip: false # 优选最快 ip 对返回 ip 测速,可能会非常慢
+      # timeout: 5 # 请求超时时间秒
+
+  # dnspod
+  - tag: dnspod
+    type: forward
+    args:
+      upstream:
+        - addr: "https://doh.pub/dns-query" # 服务器地址
+          ip_addr: # 手动指定服务器的 IP 地址 可以配置多个
+            - "2402:4e00::"
+            - "119.29.29.29"
+          trusted: true # 是否是可信服务器
+        - addr: "tls://dot.pub" # 服务器地址
+          ip_addr: # 手动指定服务器的 IP 地址 可以配置多个
+            - "2402:4e00::"
+            - "119.29.29.29"
+          trusted: true # 是否是可信服务器
+
+      bootstrap:
+        - "tls://1.1.1.1"
+        - "https://223.5.5.5/dns-query"
+      fastest_ip: false # 优选最快 ip 对返回 ip 测速,可能会非常慢
+      # timeout: 5 # 请求超时时间秒
+
+  #  dns 备用
+  - tag: localdns
+    type: forward
+    args:
+      upstream:
+        - addr: "114.114.114.114:53"
+
+  # google dns
+  - tag: google
+    type: forward
+    args:
+      upstream:
+        - addr: "https://dns.google/dns-query" # 服务器地址
+          ip_addr: # 手动指定服务器的 IP 地址 可以配置多个
+            - "2001:4860:4860::8844"
+            - "8.8.4.4"
+            - "2001:4860:4860::8888"
+            - "8.8.8.8"
+          trusted: true # 是否是可信服务器
+        - addr: "tls://dns.google" # 服务器地址
+          ip_addr: # 手动指定服务器的 IP 地址 可以配置多个
+            - "2001:4860:4860::8844"
+            - "8.8.4.4"
+            - "2001:4860:4860::8888"
+            - "8.8.8.8"
+          trusted: true # 是否是可信服务器
+      bootstrap:
+        - "tls://1.1.1.1"
+        - "https://223.5.5.5/dns-query"
+      fastest_ip: false # 优选最快 ip 对返回 ip 测速,可能会非常慢
+      # timeout: 5 # 请求超时时间秒
+
+  # cloudflare
+  - tag: cloudflare
+    type: forward
+    args:
+      upstream:
+        - addr: "https://cloudflare-dns.com/dns-query" # 服务器地址
+          ip_addr: # 手动指定服务器的 IP 地址 可以配置多个
+            - "2606:4700:4700::1001"
+            - "1.0.0.1"
+            - "2606:4700:4700::1111"
+            - "1.1.1.1"
+          trusted: true # 是否是可信服务器
+        - addr: "tls://cloudflare-dns.com" # 服务器地址
+          ip_addr: # 手动指定服务器的 IP 地址 可以配置多个
+            - "2606:4700:4700::1001"
+            - "1.0.0.1"
+            - "2606:4700:4700::1111"
+            - "1.1.1.1"
+          trusted: true # 是否是可信服务器
+
+      bootstrap:
+        - "tls://1.1.1.1"
+        - "https://223.5.5.5/dns-query"
+      fastest_ip: false # 优选最快 ip 对返回 ip 测速,可能会非常慢
+      # timeout: 5 # 请求超时时间秒
+
+  # doq 备用
+  - tag: adguard
+    type: forward
+    args:
+      upstream:
+        - addr: "quic://dns-unfiltered.adguard" # 服务器地址
+          ip_addr: # 手动指定服务器的 IP 地址 可以配置多个
+            - "2a10:50c0::1:ff"
+            - "94.140.14.140"
+            - "2a10:50c0::2:ff"
+            - "94.140.14.141"
+          trusted: true # 是否是可信服务器
+
+  ################ 匹配器 #################
+
+  # 查询 - cn 域名
+  - tag: query_cn
+    type: query_matcher
+    args:
+      domain:
+        - "ext:./geosite.dat:cn"
+
+  # 查询 - gfw
+  - tag: query_gfw
+    type: query_matcher
+    args:
+      domain:
+        - "ext:./geosite.dat:gfw"
+
+  # 查询 - 非 cn 域名
+  - tag: query_notcn
+    type: query_matcher
+    args:
+      domain:
+        - "ext:./geosite.dat:geolocation-!cn"
+
+  # 返回 - cn IP
+  - tag: response_cnip
+    type: response_matcher
+    args:
+      ip:
+        - "ext:./geoip.dat:cn"
