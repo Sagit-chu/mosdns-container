@@ -18,8 +18,20 @@ Dockerfile: [github.com/Sagit-chu/mosdns-container](https://github.com/Sagit-chu
 
 配置文件在[github.com/Sagit-chu/mosdns-container](https://github.com/Sagit-chu/mosdns-container)
 
+**流程：**
 
-geoip.dat，geosite.dat会随着镜像更新
+   - 缓存,缓存未命中则进入下一步.
+   - cn 域名 -> 国内上游dot doh
+        返回是国内 ip -> 返回结果,结束.
+        不是国内 ip 继续下一步.
+   - 非 cn 域名 -> 无污染dot doh上游
+        返回非国内 ip ? -> 返回结果,结束.
+        返回国内 ip 继续下一步.
+   - 其他所有情况,优先无污染上游结果,否则国内上游结果.
+
+
+
+geoip.dat，geosite.dat会随着镜像更新（不要挂载配置文件，或者挂载为emptyDir才会随镜像更新）
 # 启动容器
 ```
 docker run -d --name mosdns -p 5454:53/udp -p 5454:53/tcp  sagit.io/601096721/mosdns:latest
