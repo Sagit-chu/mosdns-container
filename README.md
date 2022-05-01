@@ -20,7 +20,6 @@ Dockerfile: [github.com/Sagit-chu/mosdns-container](https://github.com/Sagit-chu
 
 **流程：**
 
-   - 缓存,缓存未命中则进入下一步.
    - cn 域名 -> 国内上游dot doh
         返回是国内 ip -> 返回结果,结束.
         不是国内 ip 继续下一步.
