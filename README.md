@@ -36,4 +36,4 @@ geoip.dat，geosite.dat会随着镜像更新（不要挂载配置文件，或者
 docker run -d --name mosdns -p 5454:53/udp -p 5454:53/tcp  sagit.io/601096721/mosdns:latest
 ```
 
-因为容器已经包含了配置文件，所以可以不映射`/etc/mosdns`，如果需要修改配置文件可以映射你的设置文件。
+因为容器已经包含了配置文件，所以可以不映射`/etc/mosdns`，如果需要修改配置文件可以映射配置目录。
