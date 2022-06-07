@@ -1,5 +1,5 @@
 log:
-  level: info
+  level: error
   file: ""
 
 plugin:
@@ -64,7 +64,7 @@ plugin:
             - query_notcn # 已知的 非cn域名
           exec:
             - _prefer_ipv4 # 优先 IPv4
-            - _pad_query
+            # - _pad_query
             - remote # 无污染
             - if:
                 - "!response_cnip" # 结果是 非cnip
@@ -73,11 +73,11 @@ plugin:
 
         - primary: #其他所有情况
             - _prefer_ipv4
-            - _pad_query
+            # - _pad_query
             - remote
           secondary:
             - _prefer_ipv4
-            - _pad_query
+            # - _pad_query
             - local
           fast_fallback: 400 # 这里建议设置成 local 服务器正常延时的 2~5 倍 单位: 毫秒
           always_standby: true
