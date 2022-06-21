@@ -52,7 +52,7 @@ plugin:
             - query_cn # cn域名
             - "!_query_is_common" # 不常见的请求
           exec:
-            - ecs-cn
+            # - ecs-cn
             - _pad_query # 使用 EDNS0 的 Padding Option 将 DNS 报文用 0 填充至固定长度。能防止流量分析保护隐私
             - local # 用本地服务器
             - if:
