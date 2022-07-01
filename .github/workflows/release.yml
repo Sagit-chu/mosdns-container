@@ -44,7 +44,6 @@ jobs:
         push: true
         tags: |
           ${{ secrets.DOCKERHUB_USERNAME }}/mosdns:test
+          ${{ secrets.DOCKERHUB_USERNAME }}/mosdns:${{ env.TAG }}
           ghcr.io/sagit-chu/mosdns:latest
           ghcr.io/sagit-chu/mosdns:${{ env.TAG }}
-
-# ${{ secrets.DOCKERHUB_USERNAME }}/mosdns:${{ env.TAG }}
