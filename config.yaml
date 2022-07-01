@@ -111,6 +111,6 @@ servers:
   - exec: main_sequence
     listeners:
       - protocol: udp
-        addr: 127.0.0.1:5533
+          addr: "[::]:53"
       - protocol: tcp
-        addr: 127.0.0.1:5533
+          addr: "[::]:53"
