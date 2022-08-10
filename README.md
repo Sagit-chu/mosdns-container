@@ -1,4 +1,4 @@
-![mosdns](https://truecharts.org/_static/img/appicons/mosdns.png)
+![mosdns](https://truecharts.org/img/hotlink-ok/chart-icons/mosdns.png)
 
 
 # mosdns
