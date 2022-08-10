@@ -43,7 +43,7 @@ jobs:
         platforms: linux/amd64,linux/arm/v7,linux/arm64
         push: true
         tags: |
-          ${{ secrets.DOCKERHUB_USERNAME }}/mosdns:test
+          ${{ secrets.DOCKERHUB_USERNAME }}/mosdns:latest
           ${{ secrets.DOCKERHUB_USERNAME }}/mosdns:${{ env.TAG }}
           ghcr.io/sagit-chu/mosdns:latest
           ghcr.io/sagit-chu/mosdns:${{ env.TAG }}
