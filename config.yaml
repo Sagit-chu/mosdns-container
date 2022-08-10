@@ -1,5 +1,5 @@
 log:
-  level: debug
+  level: info
   file: ""
 
 data_providers:
