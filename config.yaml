@@ -9,6 +9,9 @@ data_providers:
   - tag: geoip
     file: ./geoip.dat
     auto_reload: true
+  - tag: hosts
+    file: ./hosts
+    auto_reload: true
 
 plugins:
   # 缓存
@@ -16,6 +19,12 @@ plugins:
     type: cache
     args:
       size: 1024
+  # Hosts
+  - tag: hosts
+    type: hosts
+    args:
+      hosts:
+        - "provider:hosts"
 
   # 转发至本地服务器的插件
   - tag: forward_local
@@ -68,6 +77,9 @@ plugins:
       exec:
         # 缓存
         - cache
+
+        # Hosts
+        - hosts
 
         # 屏蔽广告域名
         - if: query_is_ad_domain
