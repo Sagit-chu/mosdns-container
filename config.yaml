@@ -14,8 +14,13 @@ log:
 # include: []
 
 plugins:
-
   # forward 可以将所有的 upstream 写一起，sequence 里按需调用 "$插件tag 上游tag..."。看下一条注释。
+  - tag: cache
+    type: cache
+    args:
+      size: 1024
+      lazy_cache_ttl: 0
+      
   - tag: upstreams
     type: forward
     args:
@@ -95,30 +100,30 @@ plugins:
   ####  动态路由 + cache。
   # 新版的cache只会将命中的应答放在请求，不再自动终止后续规则。所以需要动态路由时，可以将
   # sequence 的转发操作用 !has_resp 短路。做到每次请求都能刷新路由表。
-  - tag: s1
-    type: sequence
-    args:
-      - exec: $cache
-      - matches:
-          - "!has_resp" # 上一步cache命中缓存有应答了就不转发了。
-        exec: $forward_remote
-      - exec: ipset ...... # ipset 每次请求都能执行。
+#  - tag: s1
+#    type: sequence
+#    args:
+#      - exec: $cache
+#      - matches:
+#          - "!has_resp" # 上一步cache命中缓存有应答了就不转发了。
+#        exec: $forward_remote
+#      - exec: ipset ...... # ipset 每次请求都能执行。
   #####
 
 
   ####### mark 使用示例
   # mark 在 exec 内是打标。在 matches 内是匹配。
   # mark 当作开关的示例。
-  - tag: s1
-    type: sequence
-    args:
-      - exec: mark 1 2  # 先打标。
-      - matches:
-          - mark 1
-        exec: $cache  # 有 mark 1 缓存会生效
-      - matches:
-          - mark 2
-        exec: ecs 1.2.3.4 # 有 mark 2 请求会被附加 ecs
+#  - tag: s1
+#    type: sequence
+#    args:
+#      - exec: mark 1 2  # 先打标。
+#      - matches:
+#          - mark 1
+#        exec: $cache  # 有 mark 1 缓存会生效
+#      - matches:
+#          - mark 2
+#        exec: ecs 1.2.3.4 # 有 mark 2 请求会被附加 ecs
       # ...
       # - matches:
       #     - mark 3
@@ -127,12 +132,14 @@ plugins:
 
   #### 最后配置 server........略
   - tag: server
-    - type: udp_server # 目前有 udp/tcp/http_server
-      args:
-        entry: s1
-        listen: 0.0.0.0:53
-    - type: tcp_server 
-      args:
-        entry: s1
-        listen: 0.0.0.0:53
+    type: udp_server # 目前有 udp/tcp/http_server
+    args:
+      entry: main
+      listen: 0.0.0.0:53
+  - tag: server_tcp
+    type: tcp_server
+    args:
+      entry: main
+      listen: 0.0.0.0:53
+
 #######
