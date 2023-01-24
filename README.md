@@ -30,7 +30,7 @@ Dockerfile: [github.com/Sagit-chu/mosdns-container](https://github.com/Sagit-chu
 
 
 
-geoip.dat，geosite.dat会随着镜像更新（挂载配置文件夹dat文件也会随着镜像更新)
+geoip，geosite会随着镜像更新（挂载配置文件夹，数据文件也会随着镜像更新)
 # 启动容器
 ```
 docker run -d --name mosdns -p 5454:53/udp -p 5454:53/tcp  sagit.io/601096721/mosdns:latest
