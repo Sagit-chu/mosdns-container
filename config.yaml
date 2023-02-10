@@ -20,7 +20,14 @@ plugins:
     args:
       size: 1024
       lazy_cache_ttl: 0
-      
+
+ # 自定义Hosts
+  - tag: hosts
+    type: hosts
+    args:
+      files:
+        - "./hosts"
+
   - tag: upstreams
     type: forward
     args:
@@ -86,6 +93,7 @@ plugins:
   - tag: main
     type: sequence
     args:
+      - exec: $hosts
       - exec: query_summary entry
       - matches:
           - qname &./geosite_category-ads-all.txt
