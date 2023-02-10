@@ -26,7 +26,7 @@ plugins:
     type: hosts
     args:
       files:
-        - "/etc/mosdns/hosts"
+        - "./hosts"
 
   - tag: upstreams
     type: forward
