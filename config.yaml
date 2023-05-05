@@ -33,7 +33,12 @@ plugins:
     args:
       upstreams:
         - tag: cloudflare_tls
-          addr: tls://1.1.1.1
+          addr: tls://1.0.0.1
+          enable_pipeline: true
+          idle_timeout: 50
+          insecure_skip_verify: true
+        - tag: google_tls
+          addr: tls://8.8.8.8
           enable_pipeline: true
           idle_timeout: 50
           insecure_skip_verify: true
@@ -68,7 +73,7 @@ plugins:
     type: sequence
     args:
       - exec: prefer_ipv4       # 希望 remote 优先 ipv4.
-      - exec: $upstreams cloudflare_tls
+      - exec: $upstreams cloudflare_tls google_tls
       # - exec: jump fastest_cf # jump 相对于把 fastest_cf 的规则链插到此处。
 
   # 这个 sequence 转发请求到本地，返回只包含 cn IP 的应答。(过滤掉非 cn 的应答)
