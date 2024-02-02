@@ -45,7 +45,7 @@ jobs:
 
     - name: Trigger build
       if: steps.Upload.outputs.cache-hit != 'true'
-      uses: peter-evans/repository-dispatch@v2
+      uses: peter-evans/repository-dispatch@v3
       with:
         token: ${{ secrets.ACCESS_TOKEN }}
         event-type: Tag Update
